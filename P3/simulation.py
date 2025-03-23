@@ -151,14 +151,14 @@ if not check_params(params):
 length = params["discretisation"]
 # On initialise les processus
 if rank != 0:
-    T_CALCUL = 0
+    t_calcul = 0
     m = Model(comm_calcul, rank_calcul, nbp_calcul, params["longueur"], params["discretisation"], params["vent"], params["debut_feu"])
     # Mettre à jour les cellules fantômes
     m.update_fantome()
 
 
 if rank == 0:
-    T_AFFICHAGE = 0
+    t_display = 0
     pg.init()
     g = DisplayFire(params["discretisation"])
     g.init_screen()
@@ -175,7 +175,7 @@ while must_continue:
         # Mettre à jour le modèle local
         must_continue = m.update()
         t_fin = time.time()
-        T_CALCUL += t_fin - t_deb
+        t_calcul += t_fin - t_deb
         # Préparer les données locales pour le Gatherv
         fire_map_loc_part = m.fire_map_loc[1:-1, :].flatten()  # Exclure les cellules fantômes
         vege_map_loc_part = m.vegetation_map_loc[1:-1, :].flatten()  # Exclure les cellules fantômes
@@ -218,7 +218,7 @@ while must_continue:
         # Mettre à jour l'affichage
         g.update(fire_map_entier, vege_map_entier)
         t_end = time.time()
-        T_AFFICHAGE += t_end - t_deb
+        t_display += t_end - t_deb
         # Vérifier les événements Pygame (comme la fermeture de la fenêtre)
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -231,7 +231,7 @@ while must_continue:
             if must_continue_t == True:
                 must_continue = True
 if rank != 0: 
-    Temps_calcul_total = comm_calcul.allreduce(T_CALCUL, op=MPI.SUM)
+    Temps_calcul_total = comm_calcul.allreduce(t_calcul, op=MPI.SUM)
     Nb_step = comm_calcul.allreduce(m.time_step, op=MPI.SUM)    
     temps_davancement_p = m.get_progress()
     temps_davancement_final = comm_calcul.allreduce(temps_davancement_p, op=MPI.SUM)
@@ -249,9 +249,9 @@ if rank == 0:
     Nb_step = comm.recv(source=1, tag=2020)
     temps_davancement_final = comm.recv(source=1, tag=3346)
     print(f"Temps de calcul moyen : {Temps_calcul_total / Nb_step} s")
-    print(f"Temps d'affichage : {T_AFFICHAGE} s")                   
+    print(f"Temps d'affichage : {t_display} s")                   
     print(f"Temps d'avancement  (par processeur) : {temps_davancement_final / (size - 1)} s")
-    print(f"Temps d'affichage d'avancement moyen : {temps_davancement_final / Nb_step} s")
+    print(f"Temps d'avancement moyen : {temps_davancement_final / Nb_step} s")
     total = end - start_time
     print(f"Durée totale : {total}")
     total_time_step = 0
