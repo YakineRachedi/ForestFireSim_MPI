@@ -154,30 +154,18 @@ class Model:
     def get_progress(self):
         print(f"Temps d'affichage d'avancement moyen : {self.tempsDavancement / self.time_step} s")
         print(f"Temps d'avancement : {self.tempsDavancement} s")
-        return None
 
     def plot_and_save_progress(self):
         import matplotlib.pyplot as plt
-        buffer_filename_1 = f"output1.txt"
-        buffer_filename_2 = f"output2.txt"
+        buffer_filename = f"output_calcul.txt"
 
-        with open(buffer_filename_1, 'w') as out1, open(buffer_filename_2, 'w') as out2:
-            out1.write("Time step\tTemps d'avancement\n")
-            out2.write("Time step\tTemps d'avancement\n")
+        with open(buffer_filename, 'w') as out:
+            out.write("Time step\tTemps d'avancement\n")
             for t, temp in zip(self.StockTimeStep, self.StockTempsDavancement):
-                out1.write(f"{t}\t{temp}\n")
-                out2.write(f"{t}\t{temp}\n")
+                out.write(f"{t}\t{temp}\n")
         plt.plot(self.StockTimeStep,self.StockTempsDavancement)
         plt.title("Evolution du temps d'avancement en fonction du time step")
         plt.xlabel("time step")
         plt.ylabel("temps d'avancement")
+        plt.grid(True)
         plt.show()
-    
-    def save_and_plot_progress(self):
-        import matplotlib.pyplot as plt
-        plt.plot(self.StockTimeStep,self.StockTempsDavancement)
-        plt.title("Evolution du temps d'avancement en fonction du time step")
-        plt.xlabel("time step")
-        plt.ylabel("temps d'avancement")
-        plt.show()
-        return None

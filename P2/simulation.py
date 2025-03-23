@@ -169,7 +169,6 @@ if rank == 1:
     comm.send(TempsDeCalcMoyen, dest=0, tag=5)
     m.get_progress()
     m.plot_and_save_progress()
-    m.save_and_plot_progress()
 elif rank == 0:
     pg.init()
     g = display.DisplayFire(params["discretisation"])
