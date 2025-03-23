@@ -137,6 +137,7 @@ if not check_params(params):
     print("Erreur dans les paramètres !")
     exit(0)
 
+t_total_deb = time.time()
 pg.init()
 
 m = model.Model( params["longueur"], params["discretisation"], params["vent"], params["debut_feu"])
@@ -146,20 +147,26 @@ g = display.DisplayFire( params["discretisation"])
 g.update(m.fire_map, m.vegetation_map)
 
 must_continue = True
-
+t_count = 0
+t_display = 0
 t_deb = time.time()
 while (m.update() and must_continue):
     t_fin = time.time()
-    print(f"Temps calcul : {t_fin - t_deb}")
-    if (m.time_step & 31) == 0:
-        print(f"Time step {m.time_step}\n==============")
+    t_count += t_fin - t_deb 
     t_deb = time.time()
     g.update(m.fire_map, m.vegetation_map)
     t_fin = time.time()
-    print(f"Temps d'affichage : {t_fin - t_deb}")
+    t_display += t_fin - t_deb
     for event in pg.event.get():
         if event.type == pg.QUIT:
             must_continue = False
             pg.quit()
 
+t_total_fin = time.time()
+
+print(f"Temps total de la simulation : {t_total_fin - t_total_deb} s")
+print(f"Temps de calcyul moyen : {t_count / m.time_step} s")
+print(f"Temps d'affichage moyen : {t_display / m.time_step} s")
+m.displayAdvanceTime()
+m.plotAdvanceTime()
 print("Fin de la simulation")

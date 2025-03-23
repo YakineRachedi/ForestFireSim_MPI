@@ -1,6 +1,6 @@
 # Modele de propagation d'incendie
 import numpy as np
-
+import time
 ROW    = 1
 COLUMN = 0
 
@@ -49,7 +49,9 @@ class Model:
         self.fire_map       = np.zeros(shape=(t_discretization,t_discretization), dtype=np.uint8)
         self.fire_map[t_start_fire_position[COLUMN], t_start_fire_position[ROW]] = np.uint8(255)
         self.fire_front = { (t_start_fire_position[COLUMN], t_start_fire_position[ROW]) : np.uint8(255) }
-
+        self.advanceTime = 0
+        self.advanceTimeHistory = []
+        self.timeStepHistory = []
         ALPHA0 = 4.52790762e-01
         ALPHA1 = 9.58264437e-04
         ALPHA2 = 3.61499382e-05
@@ -88,6 +90,7 @@ class Model:
         """
         import copy
         next_front = copy.deepcopy(self.fire_front)
+        t_deb = time.time()
         for lexico_coord, fire in self.fire_front.items():
             power = log_factor(fire)
             # On va tester les cases voisines pour évaluer la contamination par le feu :
@@ -138,8 +141,29 @@ class Model:
                     next_front.pop((lexico_coord[COLUMN], lexico_coord[ROW]))
         # A chaque itération, la végétation à l'endroit d'un foyer diminue
         self.fire_front = next_front
+        t_fin = time.time()
+        self.advanceTime += t_fin - t_deb
+        print("Temps d'avancement : ", self.advanceTime)
+        self.advanceTimeHistory.append(t_fin - t_deb)
+        self.timeStepHistory.append(self.time_step)
         for lexico_coord, _ in self.fire_front.items():
             if self.vegetation_map[lexico_coord[COLUMN], lexico_coord[ROW]] > 0:
                 self.vegetation_map[lexico_coord[COLUMN], lexico_coord[ROW]] -= 1
         self.time_step += 1
         return len(self.fire_front) > 0
+
+    def displayAdvanceTime(self):
+        print(f"Temps d'affichage d'avancement : {self.advanceTime / self.time_step} s")
+
+    def plotAdvanceTime(self):
+        import matplotlib.pyplot as plt
+
+        plt.figure(figsize=(10, 6))
+        plt.plot(self.timeStepHistory, self.advanceTimeHistory, marker='.', linestyle='--', color='b')
+        plt.title("Évolution du temps d'avancement en fonction du time step")
+        plt.xlabel("Time Step")
+        plt.ylabel("Temps d'avancement (s)")
+        plt.grid(True)
+
+        plt.savefig("advance_time_plot.png")
+        plt.show()
