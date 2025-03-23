@@ -152,7 +152,7 @@ class Model:
         return len(self.fire_front) > 0
 
     def get_progress(self):
-        print(f"Temps d'affichage d'avancement moyen : {self.tempsDavancement / self.time_step} s")
+        print(f"Temps d'avancement moyen : {self.tempsDavancement / self.time_step} s")
         print(f"Temps d'avancement : {self.tempsDavancement} s")
 
     def plot_and_save_progress(self):
